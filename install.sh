@@ -153,7 +153,7 @@ install_files() {
 	fi
 }
 
-process_args() {
+process_conf() {
 	if [ -f ${SERVICE_CONF} ]; then
 		${SUDO_CMD} chmod 666 ${SERVICE_CONF}
 		. ${SERVICE_CONF}
@@ -168,6 +168,9 @@ process_args() {
 		. ${SERVICE_HOME}/Library/.keychain_pass
 		${SUDO_CMD} chmod 400 ${SERVICE_HOME}/Library/.keychain_pass
 	fi
+}
+
+process_args() {
 	while [ $# -gt 0 ]; do
 		case $1 in
 			--node=*) SLAVE_NODE="${1#*=}"     ;;
@@ -175,6 +178,7 @@ process_args() {
 			--user=*) MASTER_USER=${1#*=}      ;;
 			--master=*) MASTER=${1#*=}         ;;
 			--java-args=*) JAVA_ARGS="${1#*=}" ;;
+			--confirm) G_CONFIRM="yes"         ;;
 		esac
 		shift
 	done
@@ -229,11 +233,16 @@ configure_daemon() {
 	done
 
 	if [ "${OS}" = "Darwin" ]; then
-		OSX_KEYCHAIN_PASS=${OSX_KEYCHAIN_PASS:-`env LC_CTYPE=C tr -dc "a-zA-Z0-9-_" < /dev/urandom | head -c 20`}
+		tr="`which tr`"
+		if [ -d "/usr/local/Cellar/coreutils" ]; then
+			tr_tmp=`find /usr/local/Cellar/coreutils -name tr`
+			if [ "${tr_tmp}" ]; then tr="${tr_tmp}"; fi
+		fi
+		OSX_KEYCHAIN_PASS=${OSX_KEYCHAIN_PASS:-`env LC_CTYPE=C ${tr} -dc "a-zA-Z0-9-_" < /dev/urandom | head -c 20`}
 		create_keychain
 		sudo -i -u ${SERVICE_USER} ${SERVICE_WRKSPC}/security.sh set-password --password=${SLAVE_TOKEN} --account=${MASTER_USER} --service=\"${SLAVE_NODE}\"
 		KEYSTORE_PASS=`sudo -i -u ${SERVICE_USER} ${SERVICE_WRKSPC}/security.sh get-password --account=${SERVICE_USER} --service=java_truststore`
-		KEYSTORE_PASS=${KEYSTORE_PASS:-`env LC_CTYPE=C tr -dc "a-zA-Z0-9-_" < /dev/urandom | head -c 20`}
+		KEYSTORE_PASS=${KEYSTORE_PASS:-`env LC_CTYPE=C ${tr} -dc "a-zA-Z0-9-_" < /dev/urandom | head -c 20`}
 		sudo -i -u ${SERVICE_USER} ${SERVICE_WRKSPC}/security.sh set-password --password=${KEYSTORE_PASS} --account=${SERVICE_USER} --service=java_truststore
 	elif [ "${OS}" = "FreeBSD" ]; then
 		KEYSTORE_PASS=${KEYSTORE_PASS:-`head -c 32768 /dev/urandom | sha1`}
@@ -546,12 +555,9 @@ case ${OS} in
 		exit 1
 	;;
 esac
-while [ $# -gt 0 ]; do
-	case $1 in
-		--confirm) G_CONFIRM="yes"         ;;
-	esac
-	shift
-done
+# $@ must be quoted in order to handle arguments that contain spaces
+# see http://stackoverflow.com/a/8198970/14731
+process_args "$@"
 if [ "${G_CONFIRM}" = "yes" ]; then
 	CONFIRM="yes"
 else
@@ -570,9 +576,7 @@ if contains "y" "${CONFIRM}" || contains "Y" "${CONFIRM}"; then
 	else
 		create_user
 	fi
-	# $@ must be quoted in order to handle arguments that contain spaces
-	# see http://stackoverflow.com/a/8198970/14731
-	process_args "$@"
+	process_conf
 	echo "Installing files..."
 	install_files
 	echo "Configuring daemon..."
