@@ -58,8 +58,8 @@ The file ``org.jenkins-ci.slave.jnlp.conf`` (or on OS-X ``Library/Preferences/or
 * `JENKINS_MASTER` specifies the URL for the Jenkins master. This is required.
 * `JENKINS_USER` specifies the Jenkins user used to bind the master to the slave. This is required.
 * `HTTP_PORT` specifies the nonstandard port used to communicate with the Jenkins master. This may be left blank for port 80 (http) or 443 (https).
-* `JAVA_TRUSTSTORE_PASS` specifies the password for the Java truststore used by Jenkins. This is required here only on OS different of OS-X.
-* `SLAVE_TOKEN` specifies the token to be used for authentication with the Jenkins master. This is required here only on OS different of OS-X.
+* `JAVA_TRUSTSTORE_PASS` specifies the password for the Java truststore used by Jenkins. This is required only on OS different than OS-X.
+* `SLAVE_TOKEN` specifies the token to be used for authentication with the Jenkins master. This is required only on OS different than OS-X.
 These settings are initially set by the installation script, and only need to be changed if that script is invalidated. The slave must be restarted for changes to take effect.
 
 ## Adding Developer Certificates

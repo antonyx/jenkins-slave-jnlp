@@ -22,7 +22,7 @@ OSX_KEYCHAIN_PASS=${OSX_KEYCHAIN_PASS:-""}
 KEYSTORE_PASS=""
 JAVA_ARGS=${JAVA_ARGS:-""}
 INSTALL_TMP=`mktemp -d -q -t org.jenkins-ci.slave.jnlp.XXXXXX`
-DOWNLOADS_PATH=https://raw.github.com/antonyx/jenkins-slave/master
+DOWNLOADS_PATH=https://raw.github.com/antonyx/jenkins-slave-jnlp/master
 SUDO_CMD="sudo"
 G_CONFIRM=${CONFIRM:-""}
 OS="`uname -s`"
@@ -37,7 +37,7 @@ create_user() {
 			${SUDO_CMD} pw user add -n ${SERVICE_USER} -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -w no -s /bin/sh -c 'Jenkins Node Service'
 		else
 			${SUDO_CMD} groupadd ${SERVICE_GROUP}
-			${SUDO_CMD} useradd -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -s /bin/bash -c 'Jenkins Node Service' ${SERVICE_USER}
+			${SUDO_CMD} useradd -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -s /bin/sh -c 'Jenkins Node Service' ${SERVICE_USER}
 			${SUDO_CMD} passwd -l ${SERVICE_USER}
 		fi
 	fi
@@ -175,7 +175,6 @@ process_args() {
 			--user=*) MASTER_USER=${1#*=}      ;;
 			--master=*) MASTER=${1#*=}         ;;
 			--java-args=*) JAVA_ARGS="${1#*=}" ;;
-			--confirm) G_CONFIRM="yes"         ;;
 		esac
 		shift
 	done
@@ -547,6 +546,12 @@ case ${OS} in
 		exit 1
 	;;
 esac
+while [ $# -gt 0 ]; do
+	case $1 in
+		--confirm) G_CONFIRM="yes"         ;;
+	esac
+	shift
+done
 if [ "${G_CONFIRM}" = "yes" ]; then
 	CONFIRM="yes"
 else
