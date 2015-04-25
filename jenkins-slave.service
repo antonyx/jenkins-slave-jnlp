@@ -1,0 +1,11 @@
+[Unit]
+Description=Jenkins Slave Server
+
+[Service]
+Type=simple
+User=${JENKINS_USER}
+Group=${JENKINS_USER}
+ExecStart=${JENKINS_HOME}/slave.jnlp.sh
+
+[Install]
+WantedBy=multi-user.target

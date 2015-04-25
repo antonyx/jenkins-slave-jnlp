@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-/Apple/DTD PLIST 1.0/EN" "http:/www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.jenkins-ci.slave.jnlp</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>${JENKINS_HOME}/slave.jnlp.sh</string>
+	</array>
+	<key>KeepAlive</key>
+	<true/>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>UserName</key>
+	<string>${JENKINS_USER}</string>
+	<key>WorkingDirectory</key>
+	<string>${JENKINS_HOME}</string>
+	<key>StandardInPath</key>
+	<string>/dev/null</string>
+	<key>StandardErrorPath</key>
+	<string>/var/log/${JENKINS_USER}/org.jenkins-ci.slave.jnlp.log</string>
+	<key>StandardOutPath</key>
+	<string>/var/log/${JENKINS_USER}/org.jenkins-ci.slave.jnlp.log</string>
+</dict>
+</plist>
