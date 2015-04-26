@@ -305,7 +305,7 @@ not be protected by a password.
 			CONFIRM=${CONFIRM:-yes}
 		fi
 		if contains "y" "${CONFIRM}" || contains "Y" "${CONFIRM}"; then
-			sudo -i -u ${SERVICE_USER} ssh-keygen -t rsa -N \'\' -f ${SERVICE_HOME}/.ssh/id_rsa -C \"${SERVICE_USER}@${SLAVE_NODE}\"
+			sudo -i -u ${SERVICE_USER} ssh-keygen -t rsa -N '' -f ${SERVICE_HOME}/.ssh/id_rsa -C \"${SERVICE_USER}@${SLAVE_NODE}\"
 		fi
 		echo "
 You will need to connect to each SSH host as ${SERVICE_USER} to add the host
@@ -410,7 +410,7 @@ write_config() {
 	if beginswith ":" "${MASTER_HTTP_PORT}"; then
 		MASTER_HTTP_PORT=${MASTER_HTTP_PORT#":"}
 	fi
-	local CONF_TMP=${INSTALL_TMP}/org.jenkins-ci.slave.jnlp.conf
+	CONF_TMP=${INSTALL_TMP}/org.jenkins-ci.slave.jnlp.conf
 	:> ${CONF_TMP}
 	echo "JENKINS_SLAVE=\"${SLAVE_NODE}\"" >> ${CONF_TMP}
 	echo "JENKINS_MASTER=${MASTER}" >> ${CONF_TMP}
