@@ -51,7 +51,7 @@ if [ "${OS}" = "Darwin" ]; then
 fi
 
 [ ! -z $HTTP_PORT ] && HTTP_PORT=":${HTTP_PORT}"
-JENKINS_SLAVE_ESC=`/bin/echo -n "${JENKINS_SLAVE}" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-`
+JENKINS_SLAVE_ESC=`printf "${JENKINS_SLAVE}" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-`
 JENKINS_JNLP_URL=${JENKINS_MASTER}${HTTP_PORT}/computer/${JENKINS_SLAVE_ESC}/slave-agent.jnlp
 
 echo

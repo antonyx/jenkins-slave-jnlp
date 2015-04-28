@@ -29,15 +29,19 @@ OS="`uname -s`"
 
 create_user() {
 	if [ ! -d "${SERVICE_HOME}" ]; then
+		USER_SHELL="/bin/sh"
 		if [ "${OS}" = "FreeBSD" ]; then
 			pw groupshow ${SERVICE_GROUP} > /dev/null
 			if [ ${?} -ne 0 ]; then
 				pw groupadd ${SERVICE_GROUP}
 			fi
-			${SUDO_CMD} pw user add -n ${SERVICE_USER} -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -w no -s /bin/sh -c 'Jenkins Node Service'
+			${SUDO_CMD} pw user add -n ${SERVICE_USER} -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -w no -s ${USER_SHELL} -c 'Jenkins Node Service'
 		else
+			if [ "${OS}" = "SunOS" ]; then
+				USER_SHELL="/usr/sbin/sh"
+			fi
 			${SUDO_CMD} groupadd ${SERVICE_GROUP}
-			${SUDO_CMD} useradd -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -s /bin/sh -c 'Jenkins Node Service' ${SERVICE_USER}
+			${SUDO_CMD} useradd -g ${SERVICE_GROUP} -d ${SERVICE_HOME} -m -s ${USER_SHELL} -c 'Jenkins Node Service' ${SERVICE_USER}
 			${SUDO_CMD} passwd -l ${SERVICE_USER}
 		fi
 	fi
@@ -247,7 +251,7 @@ configure_daemon() {
 	elif [ "${OS}" = "FreeBSD" ]; then
 		KEYSTORE_PASS=${KEYSTORE_PASS:-`head -c 32768 /dev/urandom | sha1`}
 	else
-		KEYSTORE_PASS=${KEYSTORE_PASS:-`head -c 32768 /dev/urandom | sha1sum | awk '{print $1}'`}
+		KEYSTORE_PASS=${KEYSTORE_PASS:-`head -n 16 /dev/urandom | sha1sum | awk '{print $1}'`}
 	fi
 
 	if [ "${PROTOCOL}" = "https" ]; then
@@ -305,7 +309,11 @@ not be protected by a password.
 			CONFIRM=${CONFIRM:-yes}
 		fi
 		if contains "y" "${CONFIRM}" || contains "Y" "${CONFIRM}"; then
-			sudo -i -u ${SERVICE_USER} ssh-keygen -t rsa -N '' -f ${SERVICE_HOME}/.ssh/id_rsa -C \"${SERVICE_USER}@${SLAVE_NODE}\"
+			if [ "${OS}" = "Darwin" ]; then
+				echo n | sudo -i -u ${SERVICE_USER} ssh-keygen -t rsa -N \'\' -f ${SERVICE_HOME}/.ssh/id_rsa -C \"${SERVICE_USER}@${SLAVE_NODE}\"
+			else
+				echo n | sudo su - ${SERVICE_USER} -c "ssh-keygen -t rsa -N '' -f ${SERVICE_HOME}/.ssh/id_rsa -C ${SERVICE_USER}@${SLAVE_NODE}"
+			fi
 		fi
 		echo "
 You will need to connect to each SSH host as ${SERVICE_USER} to add the host
