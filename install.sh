@@ -92,7 +92,7 @@ install_files() {
 	if [ "${OS}" = "Darwin" ]; then
 		SEC_HELPER="security-osx.sh"
 		JNLP_HELPER="org.jenkins-ci.slave.jnlp.plist"
-		JNLP_HELPER_DEST="/Library/LaunchAgents/org.jenkins-ci.slave.jnlp.plist"
+		JNLP_HELPER_DEST="/Library/LaunchDaemons/org.jenkins-ci.slave.jnlp.plist"
 		INSTALL_OPTS="-o root -g wheel -m 644 ${SERVICE_WRKSPC}/${JNLP_HELPER} ${JNLP_HELPER_DEST}"
 	elif [ "${OS}" = "SunOS" ]; then
 		JNLP_HELPER="jenkins-slave.xml"
@@ -137,11 +137,6 @@ install_files() {
 	if [ "${OS}" = "SunOS" ]; then
 		svccfg import ${JNLP_HELPER_DEST}
 		svcadm restart svc:/system/manifest-import
-	elif [ "${OS}" = "FreeBSD" ]; then
-		grep -q '^jenkins_slave_enable' /etc/rc.conf
-		if [ ${?} -ne 0 ]; then
-			echo "jenkins_slave_enable=\"YES\"" >> /etc/rc.conf
-		fi
 	fi
 
 	# download the jenkins JNLP slave script
@@ -437,18 +432,25 @@ write_config() {
 }
 
 start_daemon() {
+	LOG_FILE="/var/log/org.jenkins-ci.slave.jnlp.log"
 	case ${OS} in
 		'Darwin')
+			LOG_FILE="/var/log/${SERVICE_USER}/org.jenkins-ci.slave.jnlp.log"
 			BOOT_CMD=""
-			START_CMD="sudo launchctl load /Library/LaunchAgents/org.jenkins-ci.slave.jnlp.plist"
-			STOP_CMD="sudo launchctl unload /Library/LaunchAgents/org.jenkins-ci.slave.jnlp.plist"
+			START_CMD="sudo launchctl load -w /Library/LaunchDaemons/org.jenkins-ci.slave.jnlp.plist"
+			STOP_CMD="sudo launchctl unload /Library/LaunchDaemons/org.jenkins-ci.slave.jnlp.plist"
 			;;
 		'FreeBSD')
+			grep -q '^jenkins_slave_enable' /etc/rc.conf
+			if [ ${?} -ne 0 ]; then
+				echo "jenkins_slave_enable=\"YES\"" >> /etc/rc.conf
+			fi
 			BOOT_CMD=""
 			START_CMD="sudo service jenkins_slave start"
 			STOP_CMD="sudo service jenkins_slave stop"
 			;;
 		'SunOS')
+			LOG_FILE="/var/svc/log/application-jenkins-slave\\:default.log"
 			BOOT_CMD=""
 			START_CMD="sudo svcadm enable jenkins-slave"
 			STOP_CMD="sudo svcadm disable jenkins-slave"
@@ -468,24 +470,24 @@ start_daemon() {
 				BOOT_CMD="systemctl enable jenkins-slave"
 				START_CMD="sudo service jenkins-slave start"
 				STOP_CMD="sudo service jenkins-slave stop"
+			else
+				case ${OS_DISTRO} in
+					'Debian')
+						BOOT_CMD="update-rc.d jenkins-slave"
+						START_CMD="sudo service jenkins-slave start"
+						STOP_CMD="sudo service jenkins-slave stop"
+						;;
+					'Redhat')
+						BOOT_CMD="chkservice jenkins-slave on"
+						START_CMD=""
+						STOP_CMD=""
+						;;
+					*)
+						echo
+						echo "Sorry but ${OS_DISTRO} is not supported"
+						;;
+				esac
 			fi
-
-			case ${OS_DISTRO} in
-				'Debian')
-					BOOT_CMD="systemctl enable jenkins-slave"
-					START_CMD="sudo service jenkins-slave start"
-					STOP_CMD="sudo service jenkins-slave stop"
-					;;
-				'Redhat')
-					BOOT_CMD="chkservice jenkins-slave on"
-					START_CMD=""
-					STOP_CMD=""
-					;;
-				*)
-					echo
-					echo "Sorry but ${OS_DISTRO} is not supported"
-					;;
-			esac
 			;;
 		*)
 			echo
@@ -493,6 +495,9 @@ start_daemon() {
 			exit 1
 		;;
 	esac
+	if [ "${BOOT_CMD}" ]; then
+		${BOOT_CMD}
+	fi
 
 	echo "
 The Jenkins JNLP Slave service is installed
@@ -502,7 +507,7 @@ This service can be started using the command
 and stopped using the command
     ${STOP_CMD}
 
-This service logs to /var/log/${SERVICE_USER}/org.jenkins-ci.slave.jnlp.log
+This service logs to ${LOG_FILE}
 "
 	if [ "${G_CONFIRM}" = "yes" ]; then
 		CONFIRM="yes"
@@ -523,7 +528,7 @@ This service logs to /var/log/${SERVICE_USER}/org.jenkins-ci.slave.jnlp.log
 				CONFIRM=${CONFIRM:-no}
 			fi
 			if contains "y" "${CONFIRM}" || contains "Y" "${CONFIRM}"; then
-				open /var/log/${SERVICE_USER}/org.jenkins-ci.slave.jnlp.log
+				open ${LOG_FILE}
 			fi
 		fi
 	fi
