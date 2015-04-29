@@ -20,6 +20,7 @@ SLAVE_TOKEN=${SLAVE_TOKEN:-""}
 OSX_KEYCHAIN="login.keychain"
 OSX_KEYCHAIN_PASS=${OSX_KEYCHAIN_PASS:-""}
 KEYSTORE_PASS=""
+JAVA_TRUSTSTORE_PASS=""
 JAVA_ARGS=${JAVA_ARGS:-""}
 INSTALL_TMP=`mktemp -d -q -t org.jenkins-ci.slave.jnlp.XXXXXX`
 DOWNLOADS_PATH=https://raw.github.com/antonyx/jenkins-slave-jnlp/master
