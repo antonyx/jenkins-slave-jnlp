@@ -161,6 +161,7 @@ process_conf() {
 		MASTER=${MASTER:-$JENKINS_MASTER}
 		MASTER_HTTP_PORT=${HTTP_PORT}
 		MASTER_USER=${MASTER_USER:-$JENKINS_USER}
+		KEYSTORE_PASS="${KEYSTORE_PASS:-$JAVA_TRUSTSTORE_PASS}"
 	fi
 	if [ "${OS}" = "Darwin" ] && [ -f ${SERVICE_HOME}/Library/.keychain_pass ]; then
 		${SUDO_CMD} chmod 666 ${SERVICE_HOME}/Library/.keychain_pass
