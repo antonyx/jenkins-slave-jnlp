@@ -42,7 +42,7 @@ start_cmd="jenkins_start"
 
 jenkins_start()
 {
-	if [ ! -f ${logfile ]; then
+	if [ ! -f ${logfile} ]; then
 		touch ${logfile}
 		chown ${jenkins_user} ${logfile}
 	fi
