@@ -36,7 +36,7 @@ command="${jenkins_home}/slave.jnlp.sh"
 procname="/usr/local/openjdk7/bin/java"
 logfile="/var/log/org.jenkins-ci.slave.jnlp.log"
 command_args="> ${logfile}"
-required_files=""
+required_files="${procname}"
 
 start_cmd="jenkins_start"
 
@@ -45,6 +45,7 @@ jenkins_start()
 	if [ ! -f ${logfile} ]; then
 		touch ${logfile}
 		chown ${jenkins_user} ${logfile}
+		chmod 640 ${logfile}
 	fi
 	check_startmsgs && echo "Starting ${name}."
 	su -l ${jenkins_user} -c "/usr/sbin/daemon ${command} ${command_args}"
