@@ -107,11 +107,13 @@ install_files() {
 		if [ -d "/lib/systemd/system" ] && [ -x /bin/systemctl ]; then
 			JNLP_HELPER="jenkins-slave.service"
 			JNLP_HELPER_DEST="/lib/systemd/system/jenkins-slave.service"
+			JNLP_HELPER_PERM="644"
 		else
 			JNLP_HELPER="jenkins-slave.init.d.sh"
 			JNLP_HELPER_DEST="/etc/init.d/jenkins-slave"
+			JNLP_HELPER_PERM="744"
 		fi
-		INSTALL_OPTS="-o root -g root -m 644 ${SERVICE_WRKSPC}/${JNLP_HELPER} ${JNLP_HELPER_DEST}"
+		INSTALL_OPTS="-o root -g root -m ${JNLP_HELPER_PERM} ${SERVICE_WRKSPC}/${JNLP_HELPER} ${JNLP_HELPER_DEST}"
 	fi
 
 	# download the jenkins JNLP security helper script
@@ -475,7 +477,7 @@ start_daemon() {
 			else
 				case ${OS_DISTRO} in
 					'Debian')
-						BOOT_CMD="update-rc.d jenkins-slave"
+						BOOT_CMD="update-rc.d jenkins-slave defaults"
 						START_CMD="sudo service jenkins-slave start"
 						STOP_CMD="sudo service jenkins-slave stop"
 						;;
