@@ -104,7 +104,7 @@ install_files() {
 		JNLP_HELPER_DEST="/etc/rc.d/jenkins_slave"
 		INSTALL_OPTS="-o root -g ${SERVICE_GROUP} -m 744 ${SERVICE_WRKSPC}/${JNLP_HELPER} ${JNLP_HELPER_DEST}"
 	elif [ "${OS}" = "Linux" ]; then
-		if [ -d "/lib/systemd/system" ]; then
+		if [ -d "/lib/systemd/system" ] && [ -x /bin/systemctl ]; then
 			JNLP_HELPER="jenkins-slave.service"
 			JNLP_HELPER_DEST="/lib/systemd/system/jenkins-slave.service"
 		else
@@ -467,7 +467,7 @@ start_daemon() {
 				OS_DISTRO="Other"
 			fi
 
-			if [ -d "/lib/systemd/system" ]; then
+			if [ -d "/lib/systemd/system" ] && [ -x /bin/systemctl ]; then
 				systemctl daemon-reload
 				BOOT_CMD="systemctl enable jenkins-slave"
 				START_CMD="sudo service jenkins-slave start"
