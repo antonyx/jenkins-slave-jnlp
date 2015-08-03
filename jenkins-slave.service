@@ -6,6 +6,7 @@ Type=simple
 User=${JENKINS_USER}
 Group=${JENKINS_USER}
 ExecStart=${JENKINS_HOME}/slave.jnlp.sh
+Restart=on-success
 
 [Install]
 WantedBy=multi-user.target

@@ -28,7 +28,7 @@ PIDFILE="${JENKINS_WRKSPC}/.slave.pid"
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="${JENKINS_HOME}/slave.jnlp.sh"
+DAEMON_ARGS="-r ${JENKINS_HOME}/slave.jnlp.sh"
 
 # load environments
 if [ -r /etc/default/locale ]; then

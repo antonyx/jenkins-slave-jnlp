@@ -48,7 +48,7 @@ jenkins_start()
 		chmod 640 ${logfile}
 	fi
 	check_startmsgs && echo "Starting ${name}."
-	su -l ${jenkins_user} -c "/usr/sbin/daemon ${command} ${command_args}"
+	su -l ${jenkins_user} -c "/usr/sbin/daemon -r ${command} ${command_args}"
 }
 
 run_rc_command "$1"
