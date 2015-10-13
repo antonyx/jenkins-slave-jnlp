@@ -35,7 +35,7 @@ pidfile="/var/lib/jenkins/org.jenkins-ci.slave.jnlp/.slave.pid"
 command="${jenkins_home}/slave.jnlp.sh"
 procname="/usr/local/openjdk7/bin/java"
 logfile="/var/log/org.jenkins-ci.slave.jnlp.log"
-command_args="> ${logfile}"
+command_args="> ${logfile} 2>&1"
 required_files="${procname}"
 
 start_cmd="jenkins_start"
